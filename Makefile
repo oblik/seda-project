@@ -14,8 +14,8 @@ check:
 
 build:
 	cargo build --target wasm32-wasip1 --profile release-wasm
-	wasm-strip target/wasm32-wasip1/release-wasm/oracle-program.wasm;
-	wasm-opt -Oz --enable-bulk-memory target/wasm32-wasip1/release-wasm/oracle-program.wasm -o target/wasm32-wasip1/release-wasm/oracle-program.wasm;
+	which wasm-strip && wasm-strip target/wasm32-wasip1/release-wasm/oracle-program.wasm || true
+	which wasm-opt && wasm-opt -Oz --enable-bulk-memory target/wasm32-wasip1/release-wasm/oracle-program.wasm -o target/wasm32-wasip1/release-wasm/oracle-program.wasm || true
 
 install-tools:
 	bun install

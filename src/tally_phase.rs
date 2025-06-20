@@ -13,21 +13,21 @@ pub fn tally_phase() -> Result<()> {
 
     // Retrieve consensus reveals from the tally phase.
     let reveals = get_reveals()?;
-    let mut prices: Vec<u128> = Vec::new();
+    let mut prices: Vec<u64> = Vec::new();
 
-    // Iterate over each reveal, parse its content as an unsigned integer (u128), and store it in the prices array.
+    // Iterate over each reveal, parse its content as an unsigned integer (u64), and store it in the prices array.
     for reveal in reveals {
-        let price_bytes_slice: [u8; 16] = match reveal.body.reveal.try_into() {
+        let price_bytes_slice: [u8; 8] = match reveal.body.reveal.try_into() {
             Ok(value) => value,
             Err(_err) => {
                 // We should always handle a reveal body with care and not exit/panic when parsing went wrong
                 // It's better to skip that reveal
-                elog!("Reveal body could not be casted to u128");
+                elog!("Reveal body could not be casted to u64");
                 continue;
             }
         };
 
-        let price = u128::from_le_bytes(price_bytes_slice);
+        let price = u64::from_le_bytes(price_bytes_slice);
         log!("Received price: {}", price);
 
         prices.push(price);
@@ -43,13 +43,13 @@ pub fn tally_phase() -> Result<()> {
     let final_price = median(prices);
 
     // Report the successful result in the tally phase, encoding the result as bytes.
-    // Encoding result with big endian to decode from EVM contracts.
-    Process::success(&final_price.to_be_bytes());
+    // Keep using little-endian to match the input format
+    Process::success(&final_price.to_le_bytes());
 
     Ok(())
 }
 
-fn median(mut nums: Vec<u128>) -> u128 {
+fn median(mut nums: Vec<u64>) -> u64 {
     nums.sort();
     let middle = nums.len() / 2;
 
